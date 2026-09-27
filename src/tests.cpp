@@ -1,5 +1,5 @@
 #include "tests.h"
-
+#include <cstring>
 // 练习1，实现库函数strlen
 int my_strlen(char *str) {
     /**
@@ -7,7 +7,7 @@ int my_strlen(char *str) {
      */
 
     // IMPLEMENT YOUR CODE HERE
-    return 0;
+    return (strlen(str));
 }
 
 
@@ -19,6 +19,7 @@ void my_strcat(char *str_1, char *str_2) {
      */
 
     // IMPLEMENT YOUR CODE HERE
+    strcat(str_1, str_2);
 }
 
 
@@ -31,7 +32,7 @@ char* my_strstr(char *s, char *p) {
      */
 
     // IMPLEMENT YOUR CODE HERE
-    return 0;
+    return strstr(s, p);
 }
 
 
@@ -96,7 +97,13 @@ void rgb2gray(float *in, float *out, int h, int w) {
      */
 
     // IMPLEMENT YOUR CODE HERE
-    // ...
+    for(int i=0;i<h;i++)
+    {
+        for(int j=0;j<w;j++)
+        {
+            out[i*w+j]=0.1140*in[i*w*3+j*3+2]+0.5870*in[i*w*3+j*3+1]+0.2989*in[i*w*3+j*3+0];
+        }
+    }
 }
 
 // 练习5，实现图像处理算法 resize：缩小或放大图像
@@ -198,7 +205,24 @@ void resize(float *in, float *out, int h, int w, int c, float scale) {
 
     int new_h = h * scale, new_w = w * scale;
     // IMPLEMENT YOUR CODE HERE
-
+    for(int i=0;i<new_h;i++)
+    {
+        for(int j=0;j<new_w;j++)
+        {
+            float x0=j/scale,y0=i/scale;
+            int x1=static_cast<int>(x0),y1=static_cast<int>(y0);
+            int x2=x1+1,y2=y1+1;
+            if(x2>=w)x2=w-1;
+            if(y2>=h)y2=h-1;
+            float dx=x0-x1;
+            float dy=y0-y1;
+            for(int k=0;k<c;k++)
+            {
+                float P1=in[(y1*w+x1)*c+k],P2=in[(y1*w+x2)*c+k],P3=in[(y2*w+x1)*c+k],P4=in[(y2*w+x2)*c+k];
+                out[(i*new_w+j)*c+k]=P1*(1-dx)*(1-dy)+P2*dx*(1-dy)+P3*(1-dx)*dy+P4*dx*dy;
+            }
+        }
+    }
 }
 
 
@@ -221,4 +245,33 @@ void hist_eq(float *in, int h, int w) {
      */
 
     // IMPLEMENT YOUR CODE HERE
+    float hist[256]={0},N=float(h*w);
+    for(int i=0;i<h;i++)
+    {
+        for(int j=0;j<w;j++)
+        {
+            int pixel_value = static_cast<int>(in[i*w+j]);
+            hist[pixel_value]++;
+        }
+    }
+    for(int i=0;i<256;i++)
+    {
+        hist[i]/=N;
+    }
+    for(int i=1;i<256;i++)
+    {
+        hist[i]+=hist[i-1];
+    }
+    for(int i=0;i<256;i++)
+    {
+        hist[i]=hist[i]*255;
+        hist[i]=float(int(hist[i]+0.5f));
+    }
+    for(int i=0;i<h;i++)
+    {
+        for(int j=0;j<w;j++)
+        {    
+            in[i*w+j]=hist[static_cast<int>(in[i*w+j])];
+        }
+    }
 }
